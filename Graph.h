@@ -9,6 +9,7 @@ class Graph {
 private:
     std::map<int, std::vector<int>> outMap, inMap;
     std::map<std::pair<int, int>, int> costMap;
+    
 public:
     // constructor
     explicit Graph(int nrVertices);
@@ -65,4 +66,10 @@ public:
 
     // Save the graph to a file
     std::string toString();
+
+    // Finds connected components using a DFS traversal (treating the graph as undirected)
+    std::vector<std::vector<int>> connectedComponents();
+
+private:
+    void DFS(int v, std::map<int, bool>& visited, std::vector<int>& component);
 };

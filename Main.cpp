@@ -65,7 +65,7 @@ Graph StartRead() {
 
 // Prints the menu and performs the specified operation on the graph.
 void printMenu(Graph& G) {
-    std::cout << "Graph Operations\n1. Get the number of vertices\n2. The set of vertices\n3. Check if there is an edge between 2 vertices\n4. In degree of a vertex\n5. Out degree of a vertex\n6. The outbound edges of a vertex\n7. The inbound edges of a vertex\n8. Get the cost of an edge\n9. Modify the cost of an edge\n10. Add edge\n11. Remove edge\n12. Add vertex\n13. Remove vertex\n14. Save graph to file\n15. To String Graph\n0. Exit\n";
+    std::cout << "Graph Operations\n1. Get the number of vertices\n2. The set of vertices\n3. Check if there is an edge between 2 vertices\n4. In degree of a vertex\n5. Out degree of a vertex\n6. The outbound edges of a vertex\n7. The inbound edges of a vertex\n8. Get the cost of an edge\n9. Modify the cost of an edge\n10. Add edge\n11. Remove edge\n12. Add vertex\n13. Remove vertex\n14. Save graph to file\n15. To String Graph\n16. Find Connected Components\n0. Exit\n";
     int cmd;
     std::cout << "Command: ";
     std::cin >> cmd;
@@ -178,12 +178,23 @@ void printMenu(Graph& G) {
     case 15: {
 		std::cout << G.toString() << '\n';
 		break;
-	}
- 
+	}    case 16: {
+        auto components = G.connectedComponents();
+        std::cout << "Number of connected components: " << components.size() << '\n';
+        for (int i = 0; i < components.size(); ++i) {
+            std::cout << "Component " << i + 1 << ": ";
+            for (int v : components[i]) {
+                std::cout << v << " ";
+            }
+            std::cout << '\n';
+        }
+        break;
+    } 
     case 0:
-        throw 0; break;
+        throw 0; 
+        //break;
     default:
-        std::cout << "Invalid command\n";
+        std::cout << "Invalid command!\n";
         break;
     }
 }
@@ -196,7 +207,7 @@ int main() {
         G = StartRead();
     }
     catch (std::exception& e) {
-        std::cout << "Invalid data\n";
+        std::cout << "Invalid data!\n";
     }
     while (true) {
         try {
@@ -204,7 +215,7 @@ int main() {
             //std::cout << G.toString() << '\n';
         }
         catch (int e) {
-            std::cout << "Goodbye\n";
+            std::cout << "Exiting menu.\n";
             return 0;
         }
     }

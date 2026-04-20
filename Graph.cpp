@@ -197,3 +197,44 @@ std::string Graph::toString() {
     }
     return str;
 }
+
+// Depth-first search helper function
+void Graph::DFS(int v, std::map<int, bool>& visited, std::vector<int>& component) {
+    visited[v] = true;
+    component.push_back(v);
+
+    // To treat the graph as undirected, we check both outbound and inbound edges
+    for (int neighbor : outMap[v]) {
+        if (!visited[neighbor]) {
+            DFS(neighbor, visited, component);
+        }
+    }
+    for (int neighbor : inMap[v]) {
+        if (!visited[neighbor]) {
+            DFS(neighbor, visited, component);
+        }
+    }
+}
+
+// Finds the connected components by combining inbound and outbound paths
+std::vector<std::vector<int>> Graph::connectedComponents() {
+    std::map<int, bool> visited;
+    std::vector<std::vector<int>> components;
+
+    // Initialize all vertices as unvisited
+    for (auto const& pair : outMap) {
+        visited[pair.first] = false;
+    }
+
+    // Traverse to find components
+    for (auto const& pair : outMap) {
+        int v = pair.first;
+        if (!visited[v]) {
+            std::vector<int> component;
+            DFS(v, visited, component);
+            components.push_back(component);
+        }
+    }
+
+    return components;
+}
