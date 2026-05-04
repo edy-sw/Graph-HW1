@@ -3,6 +3,8 @@
 #include <exception>
 #include <iostream>
 #include <algorithm>
+#include <queue>
+#include <limits>
 
 // Constructor
 Graph::Graph(int nrVertices) {
@@ -198,7 +200,6 @@ std::string Graph::toString() {
     return str;
 }
 
-// Depth-first search helper function
 void Graph::DFS(int v, std::map<int, bool>& visited, std::vector<int>& component) {
     visited[v] = true;
     component.push_back(v);
@@ -237,4 +238,62 @@ std::vector<std::vector<int>> Graph::connectedComponents() {
     }
 
     return components;
+}
+
+std::pair<int, std::vector<int>> Graph::backwardsDijkstra(int startVertex, int endVertex) {
+    if (!isVertex(startVertex) || !isVertex(endVertex)) {
+        throw std::exception();
+    }
+
+    std::map<int, int> dist;
+    std::map<int, int> next_node;
+    for (auto const& pair : outMap) {
+        dist[pair.first] = std::numeric_limits<int>::max();
+    }
+
+    // Min-heap priority queue: stores pairs of (distance, vertex)
+    std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> pq;
+
+    dist[endVertex] = 0;
+    pq.push({0, endVertex});
+
+    while (!pq.empty()) {
+        int currentDist = pq.top().first;
+        int currentVertex = pq.top().second;
+        pq.pop();
+
+        if (currentVertex == startVertex) {
+            break; // We found the shortest path to the start vertex
+        }
+
+        if (currentDist > dist[currentVertex]) {
+            continue;
+        }
+
+        // Search backwards using inbound edges
+        for (int prevVertex : inMap[currentVertex]) {
+            int edgeCost = getCost(prevVertex, currentVertex);
+            if (dist[currentVertex] + edgeCost < dist[prevVertex]) {
+                dist[prevVertex] = dist[currentVertex] + edgeCost;
+                next_node[prevVertex] = currentVertex; // To reconstruct the path forwards
+                pq.push({dist[prevVertex], prevVertex});
+            }
+        }
+    }
+
+    if (dist[startVertex] == std::numeric_limits<int>::max()) {
+        // No path exists
+        return {-1, {}};
+    }
+
+    // Reconstruct path
+    std::vector<int> path;
+    int current = startVertex;
+    while (current != endVertex) {
+        path.push_back(current);
+        current = next_node[current];
+    }
+    path.push_back(endVertex);
+
+    return {dist[startVertex], path};
 }

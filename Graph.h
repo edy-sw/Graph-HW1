@@ -70,6 +70,9 @@ public:
     // Finds connected components using a DFS traversal (treating the graph as undirected)
     std::vector<std::vector<int>> connectedComponents();
 
+    // Finds a lowest cost walk between the given vertices, using a "backwards" Dijkstra algorithm.
+    std::pair<int, std::vector<int>> backwardsDijkstra(int startVertex, int endVertex);
+
 private:
     void DFS(int v, std::map<int, bool>& visited, std::vector<int>& component);
 };
