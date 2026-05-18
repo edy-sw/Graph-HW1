@@ -73,6 +73,9 @@ public:
     // Finds a lowest cost walk between the given vertices, using a "backwards" Dijkstra algorithm.
     std::pair<int, std::vector<int>> backwardsDijkstra(int startVertex, int endVertex);
 
+    // Constructs a minimal spanning tree using Kruskal's algorithm
+    std::pair<int, std::vector<std::pair<int, int>>> kruskalMST();
+
 private:
     void DFS(int v, std::map<int, bool>& visited, std::vector<int>& component);
 };

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <queue>
 #include <limits>
+#include <functional>
 
 // Constructor
 Graph::Graph(int nrVertices) {
@@ -204,7 +205,6 @@ void Graph::DFS(int v, std::map<int, bool>& visited, std::vector<int>& component
     visited[v] = true;
     component.push_back(v);
 
-    // To treat the graph as undirected, we check both outbound and inbound edges
     for (int neighbor : outMap[v]) {
         if (!visited[neighbor]) {
             DFS(neighbor, visited, component);
@@ -217,17 +217,15 @@ void Graph::DFS(int v, std::map<int, bool>& visited, std::vector<int>& component
     }
 }
 
-// Finds the connected components by combining inbound and outbound paths
+
 std::vector<std::vector<int>> Graph::connectedComponents() {
     std::map<int, bool> visited;
     std::vector<std::vector<int>> components;
 
-    // Initialize all vertices as unvisited
     for (auto const& pair : outMap) {
         visited[pair.first] = false;
     }
 
-    // Traverse to find components
     for (auto const& pair : outMap) {
         int v = pair.first;
         if (!visited[v]) {
@@ -296,4 +294,79 @@ std::pair<int, std::vector<int>> Graph::backwardsDijkstra(int startVertex, int e
     path.push_back(endVertex);
 
     return {dist[startVertex], path};
+}
+
+std::pair<int, std::vector<std::pair<int, int>>> Graph::kruskalMST() {
+    std::vector<std::pair<int, std::pair<int, int>>> edges;
+    std::map<std::pair<int, int>, bool> added;
+
+    // Collect all edges, treating the graph as undirected (avoiding duplicates)
+    for (auto const& pair : costMap) {
+        int u = pair.first.first;
+        int v = pair.first.second;
+        int cost = pair.second;
+
+        int minNode = std::min(u, v);
+        int maxNode = std::max(u, v);
+
+        // Only add the edge if we haven't already processed it
+        if (!added[{minNode, maxNode}]) {
+            edges.push_back({cost, {minNode, maxNode}});
+            added[{minNode, maxNode}] = true;
+        }
+    }
+
+    // Sort edges by cost
+    std::sort(edges.begin(), edges.end());
+
+    // Disjoint Set Union (DSU) elements
+    std::map<int, int> parent;
+    std::map<int, int> rank;
+    for (auto const& pair : outMap) {
+        parent[pair.first] = pair.first; // Each vertex is its own parent
+        rank[pair.first] = 0;
+    }
+
+    // DSU Find Root with path compression
+    std::function<int(int)> findRoot = [&](int i) -> int {
+        if (parent[i] == i)
+            return i;
+        return parent[i] = findRoot(parent[i]);
+    };
+
+    // DSU Union by rank
+    auto unify = [&](int i, int j) {
+        int root_i = findRoot(i);
+        int root_j = findRoot(j);
+
+        if (root_i != root_j) {
+            if (rank[root_i] < rank[root_j]) {
+                parent[root_i] = root_j;
+            } else if (rank[root_i] > rank[root_j]) {
+                parent[root_j] = root_i;
+            } else {
+                parent[root_j] = root_i;
+                rank[root_i]++;
+            }
+        }
+    };
+
+    int totalCost = 0;
+    std::vector<std::pair<int, int>> mst;
+
+    // Process sorted edges
+    for (auto const& edge : edges) {
+        int cost = edge.first;
+        int u = edge.second.first;
+        int v = edge.second.second;
+
+        // If including this edge doesn't cause a cycle
+        if (findRoot(u) != findRoot(v)) {
+            totalCost += cost;
+            mst.push_back({u, v});
+            unify(u, v);
+        }
+    }
+
+    return {totalCost, mst};
 }
