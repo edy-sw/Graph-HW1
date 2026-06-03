@@ -65,7 +65,7 @@ Graph StartRead() {
 
 // Prints the menu and performs the specified operation on the graph.
 void printMenu(Graph& G) {
-    std::cout << "Graph Operations\n1. Get the number of vertices\n2. The set of vertices\n3. Check if there is an edge between 2 vertices\n4. In degree of a vertex\n5. Out degree of a vertex\n6. The outbound edges of a vertex\n7. The inbound edges of a vertex\n8. Get the cost of an edge\n9. Modify the cost of an edge\n10. Add edge\n11. Remove edge\n12. Add vertex\n13. Remove vertex\n14. Save graph to file\n15. To String Graph\n16. Find Connected Components\n17. Find shortest path (Backwards Dijkstra)\n18. Minimal Spanning Tree (Kruskal's Algorithm)\n0. Exit\n";
+    std::cout << "Graph Operations\n1. Get the number of vertices\n2. The set of vertices\n3. Check if there is an edge between 2 vertices\n4. In degree of a vertex\n5. Out degree of a vertex\n6. The outbound edges of a vertex\n7. The inbound edges of a vertex\n8. Get the cost of an edge\n9. Modify the cost of an edge\n10. Add edge\n11. Remove edge\n12. Add vertex\n13. Remove vertex\n14. Save graph to file\n15. To String Graph\n16. Find Connected Components\n17. Find shortest path (Backwards Dijkstra)\n18. Minimal Spanning Tree (Kruskal's Algorithm)\n19. TSP Approximation (Hamiltonian Cycle)\n0. Exit\n";
     int cmd;
     std::cout << "Command: ";
     std::cin >> cmd;
@@ -217,6 +217,19 @@ void printMenu(Graph& G) {
         std::cout << "Minimal Spanning Tree Total Cost: " << result.first << "\nEdges included in the MST:\n";
         for (const auto& edge : result.second) {
             std::cout << edge.first << " - " << edge.second << '\n';
+        }
+        break;
+    }
+    case 19: {
+        try {
+            auto result = G.tspApproximation();
+            std::cout << "Approximate TSP Hamiltonian Cycle Cost: " << result.first << "\nPath: ";
+            for (int v : result.second) {
+                std::cout << v << " ";
+            }
+            std::cout << '\n';
+        } catch (std::exception& e) {
+            std::cout << "Error: The graph is disconnected or missing required edges to form the cycle.\n";
         }
         break;
     }

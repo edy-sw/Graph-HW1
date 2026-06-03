@@ -76,6 +76,9 @@ public:
     // Constructs a minimal spanning tree using Kruskal's algorithm
     std::pair<int, std::vector<std::pair<int, int>>> kruskalMST();
 
+    // Finds a Hamiltonian cycle approximation for the Metric TSP problem
+    std::pair<int, std::vector<int>> tspApproximation();
+
 private:
     void DFS(int v, std::map<int, bool>& visited, std::vector<int>& component);
 };

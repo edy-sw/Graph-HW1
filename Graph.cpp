@@ -300,7 +300,6 @@ std::pair<int, std::vector<std::pair<int, int>>> Graph::kruskalMST() {
     std::vector<std::pair<int, std::pair<int, int>>> edges;
     std::map<std::pair<int, int>, bool> added;
 
-    // Collect all edges, treating the graph as undirected (avoiding duplicates)
     for (auto const& pair : costMap) {
         int u = pair.first.first;
         int v = pair.first.second;
@@ -309,32 +308,27 @@ std::pair<int, std::vector<std::pair<int, int>>> Graph::kruskalMST() {
         int minNode = std::min(u, v);
         int maxNode = std::max(u, v);
 
-        // Only add the edge if we haven't already processed it
         if (!added[{minNode, maxNode}]) {
             edges.push_back({cost, {minNode, maxNode}});
             added[{minNode, maxNode}] = true;
         }
     }
 
-    // Sort edges by cost
     std::sort(edges.begin(), edges.end());
 
-    // Disjoint Set Union (DSU) elements
     std::map<int, int> parent;
     std::map<int, int> rank;
     for (auto const& pair : outMap) {
-        parent[pair.first] = pair.first; // Each vertex is its own parent
+        parent[pair.first] = pair.first;
         rank[pair.first] = 0;
     }
 
-    // DSU Find Root with path compression
     std::function<int(int)> findRoot = [&](int i) -> int {
         if (parent[i] == i)
             return i;
         return parent[i] = findRoot(parent[i]);
     };
 
-    // DSU Union by rank
     auto unify = [&](int i, int j) {
         int root_i = findRoot(i);
         int root_j = findRoot(j);
@@ -354,13 +348,11 @@ std::pair<int, std::vector<std::pair<int, int>>> Graph::kruskalMST() {
     int totalCost = 0;
     std::vector<std::pair<int, int>> mst;
 
-    // Process sorted edges
     for (auto const& edge : edges) {
         int cost = edge.first;
         int u = edge.second.first;
         int v = edge.second.second;
 
-        // If including this edge doesn't cause a cycle
         if (findRoot(u) != findRoot(v)) {
             totalCost += cost;
             mst.push_back({u, v});
@@ -369,4 +361,58 @@ std::pair<int, std::vector<std::pair<int, int>>> Graph::kruskalMST() {
     }
 
     return {totalCost, mst};
+}
+
+std::pair<int, std::vector<int>> Graph::tspApproximation() {
+    auto mstResult = kruskalMST();
+    std::vector<std::pair<int, int>> mstEdges = mstResult.second;
+
+    std::map<int, std::vector<int>> mstAdj;
+    for (auto edge : mstEdges) {
+        mstAdj[edge.first].push_back(edge.second);
+        mstAdj[edge.second].push_back(edge.first);
+    }
+
+    std::vector<int> path;
+    std::map<int, bool> visited;
+    
+    if (outMap.empty()) {
+        return {0, {}};
+    }
+    
+    int startVertex = outMap.begin()->first;
+
+    std::function<void(int)> mstDFS = [&](int u) {
+        visited[u] = true;
+        path.push_back(u);
+        for (int v : mstAdj[u]) {
+            if (!visited[v]) {
+                mstDFS(v);
+            }
+        }
+    };
+
+    mstDFS(startVertex);
+    path.push_back(startVertex); 
+
+    int tspCost = 0;
+    for (size_t i = 0; i < path.size() - 1; ++i) {
+        int u = path[i];
+        int v = path[i+1];
+        
+        if (isEdge(u, v)) {
+            tspCost += getCost(u, v);
+        } else if (isEdge(v, u)) {
+            tspCost += getCost(v, u);
+        } else {
+            auto dijkstra_res = backwardsDijkstra(u, v);
+            if (dijkstra_res.first != -1) {
+                tspCost += dijkstra_res.first;
+            } else {
+                throw std::exception(); 
+            }
+        }
+    }
+
+    return {tspCost, path};
 }
